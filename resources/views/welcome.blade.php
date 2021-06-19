@@ -35,7 +35,7 @@
                         <tr>
                             <td>{{ $post->id }}</td>
                             <td style="width: 200px">
-                                <img src="{{ $post->image }}"
+                                <img src="{{ Storage::url($post->image, 'public') }}"
                                      alt="{{ $post->title }}"
                                      class="img-fluid">
                             </td>
@@ -44,7 +44,7 @@
                             <td>
                                 <div class="row">
                                     <button class="btn btn-success"
-                                            onclick="edit(event, {{ json_encode($post) }})">Edit</button>
+                                            onclick="edit(event, {{ json_encode($post) }}, '{{ Storage::url($post->image, 'public') }}')">Edit</button>
                                     <form action="{{ route('post.destroy', $post->id) }}"
                                           method="post">
                                         @csrf
@@ -190,7 +190,7 @@
             })
         }
 
-        function edit(e, post) {
+        function edit(e, post, image) {
             e.preventDefault();
 
             reset();
@@ -198,6 +198,8 @@
             isEditMode = true;
             postId = post.id;
             title.val(post.title);
+
+            previewImage.attr('src', image)
 
             $('#post-modal').modal('show');
         }
@@ -208,7 +210,7 @@
             axios.post(`/post/${postId}`, formData)
             .then(response => {
                 $('#post-modal').modal('hide');
-                // location.reload();
+                location.reload();
             })
             .catch(error => {
                 if (error.response) {
@@ -231,7 +233,7 @@
             e.preventDefault();
 
             let formData = new FormData();
-            formData.append('title', title.val());
+            formData.append('title', title.val() || '');
             formData.append('image', image[0].files[0] || '');
             
             isEditMode ? update(formData) : store(formData);
